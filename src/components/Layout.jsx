@@ -260,7 +260,7 @@ export default function Layout() {
                 <header className="lg:hidden sticky top-0 z-30 h-16 px-4 flex items-center gap-3 bg-background/80 backdrop-blur-xl border-b border-border">
                     <button
                         onClick={() => setMobileOpen(true)}
-                        className="p-2 rounded-xl hover:bg-muted text-foreground transition-colors"
+                        className="touch-target p-2 rounded-xl hover:bg-muted text-foreground transition-colors flex items-center justify-center"
                     >
                         <Menu className="w-5 h-5" />
                     </button>
@@ -276,7 +276,7 @@ export default function Layout() {
                 <main className="flex-1 bg-background">
                     <div
                         key={location.pathname}
-                        className="p-6 sm:p-8 lg:p-10 max-w-[1600px] mx-auto page-transition"
+                        className="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto page-transition"
                     >
                         <Outlet />
                     </div>

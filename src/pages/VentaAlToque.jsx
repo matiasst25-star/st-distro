@@ -272,9 +272,9 @@ export default function VentaAlToque() {
                 </div>
             )}
 
-            <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-3rem)] items-stretch">
+            <div className="flex flex-col lg:flex-row gap-6 lg:min-h-[calc(100vh-3rem)] items-stretch">
                 {/* ═══ Left Panel: Product Selection ═══ */}
-                <div className="flex-1 flex flex-col min-w-0 h-[calc(100vh-3rem)]">
+                <div className="flex-1 flex flex-col min-w-0 lg:h-[calc(100vh-3rem)]">
                     {/* Search */}
                     <div className="mb-4 relative shrink-0 group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors w-5 h-5" />
@@ -296,8 +296,54 @@ export default function VentaAlToque() {
                         )}
                     </div>
 
-                    {/* Products Table */}
-                    <div className="flex-1 overflow-y-auto card relative">
+                    {/* ─── MOBILE: Product tap-cards ─── */}
+                    <div className="flex-1 lg:hidden overflow-y-auto">
+                        {filteredProducts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center text-muted-foreground/30 py-16">
+                                <PackageSearch className="w-14 h-14 mb-3" />
+                                <p className="text-base font-medium">No encontramos productos</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3 pb-4">
+                                {filteredProducts.map((p) => {
+                                    const inCart = cart.find((c) => c.productoId === p.id);
+                                    const stockAvailable = p.stock_actual - (inCart?.cantidad || 0);
+                                    return (
+                                        <button
+                                            key={p.id}
+                                            disabled={stockAvailable < 1}
+                                            onClick={() => stockAvailable > 0 && addToCart(p)}
+                                            className={`relative text-left p-3 rounded-xl border-2 transition-all active:scale-95 ${
+                                                stockAvailable < 1
+                                                    ? 'opacity-40 grayscale border-border'
+                                                    : inCart
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-border bg-card hover:border-primary/40'
+                                            }`}
+                                        >
+                                            {inCart && (
+                                                <span className="absolute top-2 right-2 bg-primary text-primary-foreground text-[9px] font-bold h-5 w-5 rounded-full flex items-center justify-center">
+                                                    {inCart.cantidad}
+                                                </span>
+                                            )}
+                                            <div className="font-semibold text-sm text-foreground leading-tight mb-1 pr-6 line-clamp-2">{p.nombre}</div>
+                                            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                                {formatCurrency(parseFloat(p.precio_venta))}
+                                            </div>
+                                            <div className={`text-[10px] font-bold mt-0.5 ${
+                                                p.stock_actual <= p.stock_minimo ? 'text-destructive' : 'text-muted-foreground'
+                                            }`}>
+                                                Stock: {p.stock_actual}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ─── DESKTOP: Products Table (original) ─── */}
+                    <div className="flex-1 overflow-y-auto card relative hidden lg:block">
                         <div className="table-responsive h-full">
                             <table className="table">
                                 <thead className="sticky top-0 bg-card z-10 shadow-sm">
@@ -363,7 +409,8 @@ export default function VentaAlToque() {
                 </div>
 
                 {/* ═══ Right Panel: Cart ═══ */}
-                <div className="w-[400px] max-w-full shrink-0 flex flex-col card overflow-hidden h-[calc(100vh-3rem)] lg:sticky lg:top-4">
+                {/* Desktop: sticky side panel | Mobile: fixed bottom drawer */}
+                <div className="w-full lg:w-[400px] lg:max-w-full shrink-0 flex flex-col card overflow-hidden lg:h-[calc(100vh-3rem)] lg:sticky lg:top-4">
                     {/* Cart Header */}
                     <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2.5">
@@ -406,7 +453,7 @@ export default function VentaAlToque() {
                                             </div>
                                         </div>
                                         <button
-                                            className="p-1 rounded-md text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100"
+                                            className="p-1 rounded-md text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-all"
                                             onClick={() => removeFromCart(item.productoId)}
                                         >
                                             <Trash2 size={14} />

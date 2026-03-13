@@ -21,10 +21,19 @@ async function apiFetch(endpoint, options = {}) {
         throw new Error('Sesión expirada');
     }
 
-    const data = await response.json();
+    // Parseo seguro: evita "Unexpected end of JSON input" cuando el backend
+    // devuelve body vacío (Render sleeping, errores de proxy, etc.)
+    const contentType = response.headers.get('content-type') || '';
+    let data = null;
+    if (contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim().length > 0) {
+            data = JSON.parse(text);
+        }
+    }
 
     if (!response.ok) {
-        throw new Error(data.error || 'Error en la solicitud');
+        throw new Error(data?.error || `Error del servidor (${response.status})`);
     }
 
     return data;

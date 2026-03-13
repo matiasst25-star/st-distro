@@ -20,7 +20,18 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://st-distro.vercel.app'],
+    origin: (origin, callback) => {
+        const allowed = [
+            'http://localhost:5173',
+            'https://st-distro.vercel.app',
+        ];
+        // Acepta cualquier preview URL de Vercel (*.vercel.app) + producción + localhost
+        if (!origin || allowed.includes(origin) || /\.vercel\.app$/.test(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 app.use(express.json());

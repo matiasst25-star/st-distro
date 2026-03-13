@@ -1,7 +1,7 @@
 {
-    "name": "SmartDistro",
-    "short_name": "SmartDistro",
-    "description": "Sistema de gestión para distribuidoras de bebidas",
+    "name": "ST / DISTRO",
+    "short_name": "ST/DISTRO",
+    "description": "La solución líder de Silva Torres para el mercado mayorista. Gestión de distribuidoras en la nube.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#F4F6F9",

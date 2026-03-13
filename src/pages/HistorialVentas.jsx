@@ -84,7 +84,7 @@ export default function HistorialVentas() {
                     </div>
                 </div>
                 <button
-                    className="btn btn-primary font-bold"
+                    className="touch-target btn btn-primary font-bold w-full sm:w-auto"
                     onClick={handleCerrarCaja}
                     disabled={cerrarCajaMutation.isPending}
                 >
@@ -174,7 +174,58 @@ export default function HistorialVentas() {
 
                 {/* ═══ Closures Table ═══ */}
                 <div className="card overflow-hidden">
-                    <div className="table-responsive">
+                    {/* ─── MOBILE: Cierre Cards (ocultas en md+) ──────────────────── */}
+                    <div className="md:hidden">
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center gap-3 py-16">
+                                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                <p className="text-muted-foreground font-medium">Sincronizando historial...</p>
+                            </div>
+                        ) : cierres.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center text-muted-foreground/30 py-16">
+                                <Clock className="w-16 h-16 mb-3" />
+                                <p className="text-lg font-bold">No hay registros para este rango</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 p-4">
+                                {cierres.map((c) => (
+                                    <div key={c.id} className="sale-card">
+                                        {/* Fila superior: monto + fecha */}
+                                        <div className="sale-card-row">
+                                            <span className="sale-card-amount">
+                                                {formatCurrency(Number(c.total_vendido))}
+                                            </span>
+                                            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded uppercase">
+                                                Cerrada
+                                            </span>
+                                        </div>
+                                        {/* Fecha en medio */}
+                                        <span className="sale-card-client">
+                                            {new Date(c.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                        </span>
+                                        {/* Hora */}
+                                        <span className="sale-card-meta">
+                                            Registrado a las {new Date(c.fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })} hs
+                                        </span>
+                                        {/* Chips de productos */}
+                                        {c.productos_vendidos?.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5 pt-1">
+                                                {c.productos_vendidos.map((p, idx) => (
+                                                    <div key={idx} className="flex items-center bg-background border border-border rounded-lg px-2 py-0.5 gap-1.5">
+                                                        <span className="text-xs font-semibold text-foreground truncate max-w-[100px]">{p.nombre}</span>
+                                                        <span className="text-[10px] font-bold text-primary bg-primary/10 rounded px-1 py-0.5 tabular-nums">{p.cantidad}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ─── DESKTOP: Tabla original (oculta en mobile) ───────────────── */}
+                    <div className="hidden md:block table-responsive">
                         <table className="table">
                             <thead>
                                 <tr>
@@ -236,9 +287,7 @@ export default function HistorialVentas() {
                                                         c.productos_vendidos.map((p, idx) => (
                                                             <div key={idx} className="flex items-center bg-background border border-border rounded-lg px-2.5 py-1 gap-2 hover:border-primary/30 transition-colors">
                                                                 <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">{p.nombre}</span>
-                                                                <span className="text-[10px] font-bold text-primary bg-primary/10 rounded px-1.5 py-0.5 tabular-nums">
-                                                                    {p.cantidad}
-                                                                </span>
+                                                                <span className="text-[10px] font-bold text-primary bg-primary/10 rounded px-1.5 py-0.5 tabular-nums">{p.cantidad}</span>
                                                             </div>
                                                         ))
                                                     ) : (

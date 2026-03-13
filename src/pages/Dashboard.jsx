@@ -168,7 +168,7 @@ export default function Dashboard() {
                     </div>
                     <button
                         onClick={() => navigate('/venta')}
-                        className="btn bg-blue-400 hover:bg-blue-500 text-slate-900 border-none shadow-md shadow-blue-400/20 h-10 px-5 gap-2 font-bold"
+                        className="touch-target btn bg-blue-400 hover:bg-blue-500 text-slate-900 border-none shadow-md shadow-blue-400/20 px-5 gap-2 font-bold"
                     >
                         <Plus className="w-5 h-5" />
                         Nueva Venta
@@ -176,17 +176,18 @@ export default function Dashboard() {
                 </div>
             </header>
 
-            {/* ═══ Financial Overview (Admin Only) ═══ */}
+                    {/* ═══ Financial Overview (Admin Only) ═══ */}
             {isAdmin && (
                 <div className="card-glass border-primary/20 bg-gradient-to-br from-primary/5 to-transparent overflow-hidden">
-                    <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="p-4 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
                         <div>
                             <p className="text-sm font-bold text-primary mb-1 uppercase tracking-wider">Ingresos del Día</p>
-                            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter">
+                            <h2 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter">
                                 {formatCurrency(data.ventaTotalDia)}
                             </h2>
                         </div>
-                        <div className="flex gap-4 md:gap-8 bg-background/50 backdrop-blur-md p-4 rounded-2xl border border-border/50 w-full md:w-auto">
+                        {/* En mobile: columna. En desktop: fila */}
+                        <div className="flex flex-col sm:flex-row gap-3 md:gap-8 bg-background/50 backdrop-blur-md p-4 rounded-2xl border border-border/50 w-full md:w-auto">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
                                     <Banknote className="w-6 h-6" />
@@ -196,7 +197,7 @@ export default function Dashboard() {
                                     <p className="text-xl font-bold text-foreground">{formatCurrency(data.ingresosEfectivo)}</p>
                                 </div>
                             </div>
-                            <div className="w-px bg-border"></div>
+                            <div className="hidden sm:block w-px bg-border" />
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
                                     <Smartphone className="w-6 h-6" />
@@ -361,39 +362,67 @@ export default function Dashboard() {
                             <p className="font-medium text-muted-foreground">Sin movimientos hoy aún</p>
                         </div>
                     ) : (
-                        <div className="table-responsive max-h-[400px]">
-                            <table className="table">
-                                <thead className="sticky top-0 bg-card z-10">
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <th>Estado</th>
-                                        <th className="text-right">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.ultimasVentas.map((v) => (
-                                        <tr key={v.id} className="group">
-                                            <td className="py-3.5">
-                                                <div className="font-semibold text-foreground">{v.cliente?.nombre || 'Consumidor Final'}</div>
-                                                <div className="text-xs text-muted-foreground mt-0.5">
-                                                    #{v.id} &bull; {v.usuario?.nombre}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className={`badge ${v.estado === 'pagado' ? 'badge-success' : 'badge-warning'}`}>
-                                                    {v.estado === 'pagado' ? 'Pagado' : 'Pendiente'}
-                                                </span>
-                                            </td>
-                                            <td className="text-right">
-                                                <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                    {formatCurrency(parseFloat(v.total))}
-                                                </span>
-                                            </td>
+                        <>
+                            {/* ─── MOBILE: Sale Cards (ocultas en md+) ──────────────────── */}
+                            <div className="md:hidden space-y-3 p-4">
+                                {data.ultimasVentas.map((v) => (
+                                    <div key={v.id} className="sale-card">
+                                        {/* Fila superior: monto + badge estado */}
+                                        <div className="sale-card-row">
+                                            <span className="sale-card-amount">
+                                                {formatCurrency(parseFloat(v.total))}
+                                            </span>
+                                            <span className={`badge ${v.estado === 'pagado' ? 'badge-success' : 'badge-warning'}`}>
+                                                {v.estado === 'pagado' ? 'Pagado' : 'Pendiente'}
+                                            </span>
+                                        </div>
+                                        {/* Cliente en medio */}
+                                        <span className="sale-card-client">
+                                            {v.cliente?.nombre || 'Consumidor Final'}
+                                        </span>
+                                        {/* Meta: número de venta + vendedor */}
+                                        <span className="sale-card-meta">
+                                            #{v.id} &bull; {v.usuario?.nombre}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* ─── DESKTOP: Tabla original (oculta en mobile) ────────────── */}
+                            <div className="hidden md:block table-responsive max-h-[400px]">
+                                <table className="table">
+                                    <thead className="sticky top-0 bg-card z-10">
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Estado</th>
+                                            <th className="text-right">Total</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {data.ultimasVentas.map((v) => (
+                                            <tr key={v.id} className="group">
+                                                <td className="py-3.5">
+                                                    <div className="font-semibold text-foreground">{v.cliente?.nombre || 'Consumidor Final'}</div>
+                                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                                        #{v.id} &bull; {v.usuario?.nombre}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`badge ${v.estado === 'pagado' ? 'badge-success' : 'badge-warning'}`}>
+                                                        {v.estado === 'pagado' ? 'Pagado' : 'Pendiente'}
+                                                    </span>
+                                                </td>
+                                                <td className="text-right">
+                                                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
+                                                        {formatCurrency(parseFloat(v.total))}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

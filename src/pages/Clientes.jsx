@@ -178,7 +178,45 @@ export default function Clientes() {
 
             {/* ═══ Clients Table ═══ */}
             <div className="card overflow-hidden">
-                <div className="table-responsive">
+
+                {/* ─── MOBILE: Cliente Cards ─── */}
+                <div className="md:hidden">
+                    {filteredClientes.length === 0 ? (
+                        <div className="flex flex-col items-center text-muted-foreground/40 py-14">
+                            <Users className="w-12 h-12 mb-3" />
+                            <p className="font-medium">No se encontraron clientes</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3 p-4">
+                            {filteredClientes.map((c) => (
+                                <div key={c.id} className="sale-card" onClick={() => navigate(`/clientes/${c.id}`)}>
+                                    <div className="sale-card-row">
+                                        <span className="sale-card-amount">{c.nombre}</span>
+                                        <span className={`badge ${c.activo ? 'badge-success' : 'badge-danger'}`}>
+                                            {c.activo ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                    </div>
+                                    {c.telefono && (
+                                        <span className="sale-card-client">📞 {c.telefono}</span>
+                                    )}
+                                    <div className="flex items-center justify-between pt-1">
+                                        <span className="sale-card-meta">
+                                            Límite: {formatCurrency(parseFloat(c.limite_credito))}
+                                        </span>
+                                        {parseFloat(c.saldo_actual) > 0 && (
+                                            <span className="text-xs font-bold text-destructive tabular-nums">
+                                                Saldo: {formatCurrency(parseFloat(c.saldo_actual))}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* ─── DESKTOP: Tabla original ─── */}
+                <div className="hidden md:block table-responsive">
                     <table className="table">
                         <thead>
                             <tr>
@@ -237,3 +275,4 @@ export default function Clientes() {
         </div>
     );
 }
+

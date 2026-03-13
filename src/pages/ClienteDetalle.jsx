@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import { ArrowLeft, Phone, MapPin, CreditCard, Wallet, FileText, ShoppingCart, Loader2 } from 'lucide-react';
+import { ArrowLeft, Phone, MapPin, CreditCard, Wallet, FileText, ShoppingCart, Loader2, Edit2, X } from 'lucide-react';
 
 function formatCurrency(value) {
     return new Intl.NumberFormat('es-AR', {
@@ -25,11 +26,60 @@ function formatDate(dateStr) {
 export default function ClienteDetalle() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
     const { data: cliente, isLoading: loading } = useQuery({
         queryKey: ['cliente', id],
         queryFn: () => api.getCliente(parseInt(id)),
     });
+
+    const [showEdit, setShowEdit] = useState(false);
+    const [editData, setEditData] = useState({
+        nombre: '',
+        telefono: '',
+        direccion: '',
+        limite_credito: '',
+        activo: true
+    });
+    const [message, setMessage] = useState(null);
+
+    useEffect(() => {
+        if (cliente) {
+            setEditData({
+                nombre: cliente.nombre || '',
+                telefono: cliente.telefono || '',
+                direccion: cliente.direccion || '',
+                limite_credito: cliente.limite_credito || '',
+                activo: cliente.activo
+            });
+        }
+    }, [cliente]);
+
+    const updateClienteMutation = useMutation({
+        mutationFn: (data) => api.updateCliente(parseInt(id), data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['cliente', id] });
+            queryClient.invalidateQueries({ queryKey: ['clientes'] });
+            setShowEdit(false);
+            setMessage({ type: 'success', text: 'Cliente actualizado exitosamente' });
+            setTimeout(() => setMessage(null), 3000);
+        },
+        onError: (err) => {
+            setMessage({ type: 'error', text: err.message });
+            setTimeout(() => setMessage(null), 3000);
+        }
+    });
+
+    const handleEdit = (e) => {
+        e.preventDefault();
+        updateClienteMutation.mutate({
+            nombre: editData.nombre,
+            telefono: editData.telefono || null,
+            direccion: editData.direccion || null,
+            limite_credito: parseFloat(editData.limite_credito) || 0,
+            activo: editData.activo
+        });
+    };
 
     if (loading) {
         return (
@@ -97,10 +147,102 @@ export default function ClienteDetalle() {
                         <p>Detalle y estado de cuenta del cliente</p>
                     </div>
                 </div>
-                <span className={`badge ${cliente.activo ? 'badge-success' : 'badge-danger'}`}>
-                    {cliente.activo ? 'Activo' : 'Inactivo'}
-                </span>
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap mt-3 sm:mt-0">
+                    <span className={`badge ${cliente.activo ? 'badge-success' : 'badge-danger'}`}>
+                        {cliente.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                    <button className="btn btn-outline bg-card text-foreground border-border hover:bg-muted h-9 px-3 text-sm gap-2 touch-target" onClick={() => setShowEdit(true)}>
+                        <Edit2 size={16} /> Editar
+                    </button>
+                </div>
             </header>
+
+            {/* Toast */}
+            {message && (
+                <div className={`toast animate-in fade-in-down duration-300 ${message.type === 'error' ? 'toast-error' : 'toast-success'}`}>
+                    {message.text}
+                </div>
+            )}
+
+            {/* ═══ Edit Client Modal ═══ */}
+            {showEdit && (
+                <div className="modal-overlay animate-in fade-in duration-200" onClick={() => setShowEdit(false)}>
+                    <div className="modal-content max-w-md animate-in scale-in duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="font-bold text-lg text-foreground">Editar Cliente</h3>
+                            <button className="btn-icon hover:bg-muted text-muted-foreground" onClick={() => setShowEdit(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleEdit}>
+                            <div className="modal-body space-y-4">
+                                <div className="space-y-2">
+                                    <label className="form-label">Nombre</label>
+                                    <input
+                                        className="input input-lg"
+                                        value={editData.nombre}
+                                        onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
+                                        placeholder="Ej: Kiosco Don Pedro"
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="form-label">Teléfono</label>
+                                        <input
+                                            className="input"
+                                            value={editData.telefono}
+                                            onChange={(e) => setEditData({ ...editData, telefono: e.target.value })}
+                                            placeholder="Ej: 1155443322"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="form-label">Límite de Crédito</label>
+                                        <input
+                                            type="number"
+                                            className="input"
+                                            value={editData.limite_credito}
+                                            onChange={(e) => setEditData({ ...editData, limite_credito: e.target.value })}
+                                            placeholder="0"
+                                            min="0"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="form-label">Dirección</label>
+                                    <input
+                                        className="input"
+                                        value={editData.direccion}
+                                        onChange={(e) => setEditData({ ...editData, direccion: e.target.value })}
+                                        placeholder="Ej: Av. San Martín 1234"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border border-border mt-2">
+                                    <label className="font-semibold text-sm cursor-pointer select-none">Estado del cliente</label>
+                                    <button
+                                        type="button"
+                                        className={`badge ${editData.activo ? 'badge-success hover:bg-red-100 hover:text-red-700' : 'badge-danger hover:bg-emerald-100 hover:text-emerald-700'} transition-colors cursor-pointer`}
+                                        onClick={() => setEditData({ ...editData, activo: !editData.activo })}
+                                    >
+                                        {editData.activo ? 'Activo (click para pausar)' : 'Pausado (click para activar)'}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-ghost" onClick={() => setShowEdit(false)} disabled={updateClienteMutation.isPending}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="btn btn-primary font-bold" disabled={updateClienteMutation.isPending}>
+                                    {updateClienteMutation.isPending ? (
+                                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Guardando...</>
+                                    ) : 'Guardar Cambios'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* ═══ Info Cards ═══ */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children">

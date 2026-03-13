@@ -168,7 +168,8 @@
 
   /* ─── Inputs ──────────────────────────────────────────────── */
   .input {
-    @apply flex h-10 w-full rounded-xl border border-input bg-transparent px-4 py-2 text-sm font-medium shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50;
+    /* text-[16px] previene zoom automático en Safari/Chrome mobile (iOS requiere ≥16px) */
+    @apply flex h-10 w-full rounded-xl border border-input bg-transparent px-4 py-2 text-[16px] md:text-sm font-medium shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .input-lg {
@@ -293,6 +294,49 @@
   /* ─── Skeleton ─────────────────────────────────────────────── */
   .skeleton {
     @apply bg-muted animate-pulse rounded-lg;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     MOBILE-FIRST UTILITIES
+     Prefix md: para entrar en desktop y mantener Zero Regression.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* Touch-friendly: mínimo 48px para uso con el pulgar (WCAG 2.5.5) */
+  .touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Padding lateral seguro: el contenido no toca los bordes físicos del celular */
+  .safe-zone {
+    @apply px-4;
+  }
+
+  /* ─── Sale Card — reemplaza filas de tabla en mobile ─────────
+     Uso: <div class="sale-card"> ... </div>
+     Oculto en md+ con md:hidden en el wrapper, visible solo en mobile.
+  ────────────────────────────────────────────────────────────── */
+  .sale-card {
+    @apply rounded-xl border border-border bg-card shadow-sm p-4 flex flex-col gap-1.5 transition-all duration-200 active:scale-[0.98];
+  }
+
+  /* Monto — elemento principal, prominente */
+  .sale-card-amount {
+    @apply text-xl font-black text-foreground tracking-tight tabular-nums;
+  }
+
+  /* Cliente / descripción principal */
+  .sale-card-client {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  /* Fecha / meta info — discreta, abajo */
+  .sale-card-meta {
+    @apply text-xs text-muted-foreground font-medium;
+  }
+
+  /* Row dentro de una sale-card: icono + texto lado a lado */
+  .sale-card-row {
+    @apply flex items-center justify-between gap-2;
   }
 }
 

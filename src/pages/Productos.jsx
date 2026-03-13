@@ -286,7 +286,149 @@ export default function Productos() {
 
             {/* ═══ Products Table ═══ */}
             <div className="card overflow-hidden">
-                <div className="table-responsive">
+
+                {/* ─── MOBILE: Producto Cards ─── */}
+                <div className="md:hidden">
+                    {filteredProducts.length === 0 ? (
+                        <div className="flex flex-col items-center text-muted-foreground/40 py-14">
+                            <Package className="w-12 h-12 mb-3" />
+                            <p className="font-medium text-base">No se encontraron productos</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3 p-4">
+                            {filteredProducts.map((p) => (
+                                editingId === p.id ? (
+                                    <div key={p.id} className="sale-card bg-primary/5 border-primary/20 space-y-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase pl-1">Nombre del producto</label>
+                                            <input
+                                                className="input h-10 text-sm font-bold"
+                                                value={editData.nombre}
+                                                onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-muted-foreground uppercase pl-1">SKU</label>
+                                                <input
+                                                    className="input h-10 text-xs font-mono"
+                                                    value={editData.sku}
+                                                    onChange={(e) => setEditData({ ...editData, sku: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase pl-1">Precio Venta</label>
+                                                <input
+                                                    type="number"
+                                                    className="input h-10 text-sm font-bold text-emerald-600"
+                                                    value={editData.precio_venta}
+                                                    onChange={(e) => setEditData({ ...editData, precio_venta: parseFloat(e.target.value) })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {isAdmin && (
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase pl-1">Costo</label>
+                                                    <input
+                                                        type="number"
+                                                        className="input h-10 text-xs"
+                                                        value={editData.precio_costo || 0}
+                                                        onChange={(e) => setEditData({ ...editData, precio_costo: parseFloat(e.target.value) })}
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-muted-foreground uppercase pl-1">Stock Act.</label>
+                                                <input
+                                                    type="number"
+                                                    className="input h-10 text-xs font-bold"
+                                                    value={editData.stock_actual}
+                                                    onChange={(e) => setEditData({ ...editData, stock_actual: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-muted-foreground uppercase pl-1">Stock Mín.</label>
+                                                <input
+                                                    type="number"
+                                                    className="input h-10 text-xs"
+                                                    value={editData.stock_minimo}
+                                                    onChange={(e) => setEditData({ ...editData, stock_minimo: parseInt(e.target.value) })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="pt-2">
+                                            <button
+                                                className={`w-full py-2.5 rounded-lg text-xs font-bold border transition-all active:scale-95 cursor-pointer ${p.activo
+                                                    ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                                                    : 'border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                onClick={() => toggleActive(p)}
+                                            >
+                                                {p.activo ? 'Pausar Publicación (Ocultar)' : 'Activar Publicación'}
+                                            </button>
+                                        </div>
+                                        <div className="flex gap-2 pt-2 border-t border-border mt-2">
+                                            <button className="flex-1 btn btn-ghost h-10 border border-border" onClick={() => setEditingId(null)}>
+                                                Cancelar
+                                            </button>
+                                            <button className="flex-1 btn btn-primary h-10 font-bold shadow-md shadow-primary/20" onClick={() => saveEdit(p.id)}>
+                                                Guardar Cambios
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div key={p.id} className="sale-card">
+                                        {/* Fila superior: nombre + badge estado */}
+                                        <div className="sale-card-row">
+                                            <span className="sale-card-amount line-clamp-1">{p.nombre}</span>
+                                            {isAdmin ? (
+                                                <button
+                                                    className={`badge border-transparent transition-all active:scale-90 cursor-pointer ${p.activo
+                                                        ? 'badge-success hover:bg-red-100 hover:text-red-700'
+                                                        : 'badge-danger hover:bg-emerald-100 hover:text-emerald-700'}`}
+                                                    onClick={() => toggleActive(p)}
+                                                >
+                                                    {p.activo ? 'Activo' : 'Inactivo'}
+                                                </button>
+                                            ) : (
+                                                <span className={`badge ${p.activo ? 'badge-success' : 'badge-danger'}`}>
+                                                    {p.activo ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* SKU */}
+                                        <div className="flex items-center gap-2">
+                                            <code className="bg-muted px-2 py-0.5 rounded-md text-xs font-mono text-muted-foreground">{p.sku}</code>
+                                        </div>
+                                        {/* Precios y stock */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                                {formatCurrency(parseFloat(p.precio_venta))}
+                                            </span>
+                                            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${p.stock_actual <= p.stock_minimo
+                                                ? 'bg-destructive/10 text-destructive'
+                                                : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                                Stock: {p.stock_actual}
+                                            </span>
+                                        </div>
+                                        {/* Editar (solo admin) */}
+                                        {isAdmin && (
+                                            <button
+                                                className="w-full mt-1 btn btn-ghost text-xs h-8 gap-1.5 border border-border"
+                                                onClick={() => startEdit(p)}
+                                            >
+                                                <Edit2 size={12} /> Editar producto
+                                            </button>
+                                        )}
+                                    </div>
+                                )
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* ─── DESKTOP: Tabla original ─── */}
+                <div className="hidden md:block table-responsive">
                     <table className="table">
                         <thead>
                             <tr>
@@ -305,48 +447,48 @@ export default function Productos() {
                                 <tr key={p.id} className={`group ${editingId === p.id ? 'bg-primary/[0.03]' : ''}`}>
                                     {editingId === p.id ? (
                                         <>
-                                            <td className="px-4 py-3 min-w-[200px]">
+                                            <td className="px-2 py-3 min-w-[180px]">
                                                 <input
-                                                    className="input h-9 text-sm font-bold"
+                                                    className="input h-9 px-3 text-sm font-bold min-w-full"
                                                     value={editData.nombre}
                                                     onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 <input
-                                                    className="input h-9 text-xs font-mono text-center"
+                                                    className="input h-9 px-2 text-xs font-mono text-center min-w-[80px]"
                                                     value={editData.sku}
                                                     onChange={(e) => setEditData({ ...editData, sku: e.target.value })}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 <input
                                                     type="number"
-                                                    className="input h-9 text-right text-sm font-bold text-emerald-600"
+                                                    className="input h-9 px-2 text-right text-sm font-bold text-emerald-600 min-w-[80px]"
                                                     value={editData.precio_venta}
                                                     onChange={(e) => setEditData({ ...editData, precio_venta: parseFloat(e.target.value) })}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 <input
                                                     type="number"
-                                                    className="input h-9 text-right text-sm"
+                                                    className="input h-9 px-2 text-right text-sm min-w-[80px]"
                                                     value={editData.precio_costo}
                                                     onChange={(e) => setEditData({ ...editData, precio_costo: parseFloat(e.target.value) })}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 <input
                                                     type="number"
-                                                    className="input h-9 text-right text-sm font-bold"
+                                                    className="input h-9 px-2 text-right text-sm font-bold min-w-[70px]"
                                                     value={editData.stock_actual}
                                                     onChange={(e) => setEditData({ ...editData, stock_actual: parseInt(e.target.value) })}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-2 py-3">
                                                 <input
                                                     type="number"
-                                                    className="input h-9 text-right text-sm"
+                                                    className="input h-9 px-2 text-right text-sm min-w-[70px]"
                                                     value={editData.stock_minimo}
                                                     onChange={(e) => setEditData({ ...editData, stock_minimo: parseInt(e.target.value) })}
                                                 />
@@ -452,3 +594,4 @@ export default function Productos() {
         </div>
     );
 }
+
